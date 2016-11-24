@@ -177,12 +177,11 @@ plotz <- function() {
              mytheme
 }
 
-#A função "EMQ()" aplica o erro quadrático médio ao erro normalizado entre
+#A função "EMQ()" aplica o erro quadrático médio sobre a diferença entre
 #a série original "Zorg2" e a série de previsão "Zprev". 
 EQM <- function() {
       erro <- dataMU$Zorg2 - dataMU$Zprev
-      erro.normalizado <- erro/max(sqrt(erro^2), na.rm = TRUE)
-      mse <- mean(erro.normalizado^2, na.rm = TRUE)
+      mse <- mean(erro^2, na.rm = TRUE)
       mse
 }
 

@@ -1,7 +1,7 @@
 ---
 title: "Modelagem com utilização do método dos mínimos quadrados"
 author: "José Roberto Sobrinho Lima"
-date: "23 de novembro de 2016"
+date: "24 de novembro de 2016"
 fontsize: 12 pt
 output: pdf_document
 ---
@@ -10,20 +10,69 @@ output: pdf_document
 
 O intuito deste trabalho é aplicar sobre uma determinada série temporal o 
 **método dos mínimos quadrados**. Essa técnica é uma modelagem baseada em 
-regressão, que procura estimar os valores da série sob análise 
-caracterizando tendência e sazonalidade de forma bem definida: a tendência 
-é modelada como um polinômio de grau arbitrário; e a sazonalidade, como 
-apresentando comportamento determinístico.  
+regressão, que procura estimar os valores da série sob análise
+caracterizando tendência $T(t)$ e sazonalidade $S(t)$ de forma bem definida:
+a tendência é modelada como um polinômio de grau arbitrário \textit{m}
+definido por $T(t)=\sum_{j=0}^{m} \beta_{j}t^{j}$; e a sazonalidade, como
+apresentando comportamento determinístico (ou seja, que pode ser previsto
+perfeitamente a partir de meses anteriores) definida por
+$S(t)=\sum_{j=1}^{12} \alpha_{j}d_{jt}$.  
 
-Esses fatores limitam a capacidade de aproximação da série estimada 
-mediante esse método, bem como não oferecem parâmetros mais apurados para 
-dar robustez às previsões desenvolvidas com este algoritmo.  
+Esses fatores limitam a capacidade de aproximação das séries estimadas,
+tanto o modelo para os valores observados quanto o modelo para os valores
+previstos. No primeiro caso, o fator limitante é a definição de uma
+sazonalidade determinística, uma vez que não corresponde tão bem ao
+comportamente de série não estacionárias (como a que estamos analisando).
+No segundo caso, a limitação ocorre em virtude de aproximarmos a tendência
+por um polinômio: embora ele possa ajustar-se bem ao conjunto de valores
+observados, extrapolações futuras ou previsões possivelmente não serão tão
+boas.  
 
 ##2. Objetivos  
 
+###2.1. Objetivo Geral  
 
+O escopo principal do trabalho é analisar o grau de proximidade de uma série
+estimada mediante aplicação do **método dos mínimos quadrados** sobre uma
+série original. Por _grau de proximidade_, entendemos tanto o resíduo $a(t)$
+dos dados observados, quanto o _erro quadrático médio_ dos dados de
+previsão.  
 
-##3. Metodologia  
+###2.2. Objetivos Específicos  
+
+(a) Implementação do **método dos mínimos quadrados** apenas utilizando
+comandos e funções básicas. Ou seja, sem o auxílio de recursos de funções e
+rotinas pré-definidas de _toolboxs_ consolidadas.
+
+(b) Apresentação dos dados obtidos mediante estruturas reutilizáveis
+(_funções_) baseadas em parâmetros variados (grau da tendência polinomial e
+quantidade de anos a serem previstos).  
+
+##3. Justificativa  
+
+É preciso definir critérios quantitativos para aferir o quão boa é uma
+determinada modelagem de dados para aproximar os valores reais. Destarte,
+os dois conjuntos de dados a seguir satisfazem a exigência de medidas
+quantitativas para o que chamamos de _grau de proximidade_ entre o modelo
+estimador e a série analisada.  
+
+São elas: (1) o resíduo $a(t)$ das amostras observadas, que corresponde a
+uma componente aleátoria de média zero e variância constante
+$\sigma_{a}^{2}$ e (2) o _erro quadrático médio_ das amostras de previsão.  
+
+Ademais, sobre a não utilização de _toolboxs_ com funções e rotinas
+pré-definidas, existem inúmeras vantagem em desenhar um algoritmo utilizando
+somente comandos e funções básicas, uma delas é conhecer os mecanismos
+internos do método mais a fundo, o que nos permite avaliar criticamente as
+limitações da própria técnica.  
+
+Por fim, cabe rassaltar que a apresentação dos dados obtidos mediante
+_funções_ definidas pelo usuário, que são estruturas reutilizáveis,
+facilitam aplicações do algoritmo em sequência, sob variadas condições, que
+se baseiam em parâmetros como o grau do polinômio que modela a tendência e
+o número de anos sobre os quais serão feitas previsões.  
+
+##4. Metodologia  
 
 A aplicação desenvolvida neste trabalho utilizou uma série temporal que 
 indica mensalmente a quantidade, em milhares, de homens jovens 
@@ -33,15 +82,7 @@ de 1948 e dezembro de 1981.
 Os dados foram obtidos no site [DataMarket][1], e foram salvos em um 
 repositório público do [GitHub][2] para facilitar seu processamento no
 código-fonte [projetoTS.R][3] que apresentaremos em pormenores no tópico
-seguinte, sobre os _**Resultados**_.  
-
-Ademais, a construção do algoritmo para implementar o 
-**método dos mínimos quadrados** foi feita sem recurso a toolboxs
-consolidadas, que aplicam o método mediante funções e rotinas pré-definidas.
-Existem inúmeras vantagem em desenhar um algoritmo utilizando somente
-comandos e funções básicas, uma delas é conhecer os mecanismos internos do
-método mais a fundo, o que nos permite avaliar criticamente as limitações
-da própria técnica.  
+seguinte, em _**Resultados**_.  
 
 ##4. Resultados  
 
@@ -239,12 +280,11 @@ plotz <- function() {
              mytheme
 }
 
-#A função "EMQ()" aplica o erro quadrático médio ao erro normalizado entre
+#A função "EMQ()" aplica o erro quadrático médio sobre a diferença entre
 #a série original "Zorg2" e a série de previsão "Zprev". 
 EQM <- function() {
       erro <- dataMU$Zorg2 - dataMU$Zprev
-      erro.normalizado <- erro/max(sqrt(erro^2), na.rm = TRUE)
-      mse <- mean(erro.normalizado^2, na.rm = TRUE)
+      mse <- mean(erro^2, na.rm = TRUE)
       mse
 }
 ```
@@ -262,7 +302,7 @@ p1; p2; p3; p4
 ```
 
 O erro quadrático médio calculado para esta primeira aplicação utiliza os
-os dados plotados acima, no último gráfico. O seu valor é  
+dados plotados acima, no último gráfico. O seu valor é  
 
 ```{r results = "markup"} 
 EQM()
@@ -276,8 +316,8 @@ plotz()
 p1; p2; p3; p4
 ```
 
-O erro quadrático médio calculado para esta primeira aplicação utiliza os
-os dados plotados acima, no último gráfico. O seu valor é  
+O erro quadrático médio calculado para esta segunda aplicação utiliza os
+dados plotados acima, no último gráfico. O seu valor é  
 
 ```{r results = "markup"} 
 EQM()
@@ -291,8 +331,8 @@ plotz()
 p1; p2; p3; p4
 ```
 
-O erro quadrático médio calculado para esta primeira aplicação utiliza os
-os dados plotados acima, no último gráfico. O seu valor é  
+O erro quadrático médio calculado para esta terceira aplicação utiliza os
+dados plotados acima, no último gráfico. O seu valor é  
 
 ```{r results = "markup"} 
 EQM()

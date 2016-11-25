@@ -1,5 +1,5 @@
 ---
-title: "Modelagem com utilização do método dos mínimos quadrados"
+title: "Modelagem de Séries Temporais pelo Método dos Mínimos Quadrados"
 author: "José Roberto Sobrinho Lima"
 date: "24 de novembro de 2016"
 fontsize: 12 pt
@@ -9,13 +9,13 @@ output: pdf_document
 ##1. Introdução  
 
 O intuito deste trabalho é aplicar sobre uma determinada série temporal o 
-**método dos mínimos quadrados**. Essa técnica é uma modelagem baseada em 
-regressão, que procura estimar os valores da série sob análise
-caracterizando tendência $T(t)$ e sazonalidade $S(t)$ de forma bem definida:
-a tendência é modelada como um polinômio de grau arbitrário \textit{m}
-definido por $T(t)=\sum_{j=0}^{m} \beta_{j}t^{j}$; e a sazonalidade, como
-apresentando comportamento determinístico (ou seja, que pode ser previsto
-perfeitamente a partir de meses anteriores) definida por
+_**método dos mínimos quadrados**_ (doravante _**MMQ**_). Essa técnica é uma
+modelagem baseada em regressão, que procura estimar os valores da série sob
+análise caracterizando tendência $T(t)$ e sazonalidade $S(t)$ da seguinte
+forma: a tendência é modelada como um polinômio de grau arbitrário
+\textit{m} definido por $T(t)=\sum_{j=0}^{m} \beta_{j}t^{j}$; e a
+sazonalidade, como apresentando comportamento determinístico (ou seja, que
+pode ser previsto perfeitamente a partir de meses anteriores) definida por
 $S(t)=\sum_{j=1}^{12} \alpha_{j}d_{jt}$.  
 
 Esses fatores limitam a capacidade de aproximação das séries estimadas,
@@ -33,16 +33,15 @@ boas.
 ###2.1. Objetivo Geral  
 
 O escopo principal do trabalho é analisar o grau de proximidade de uma série
-estimada mediante aplicação do **método dos mínimos quadrados** sobre uma
-série original. Por _grau de proximidade_, entendemos tanto o resíduo $a(t)$
-dos dados observados, quanto o _erro quadrático médio_ dos dados de
+estimada mediante aplicação do _**MMQ**_ sobre uma série original. Por _grau de proximidade_, entendemos tanto o resíduo $a(t)$ dos dados observados,
+quanto o **erro quadrático médio** (doravante **EQM**) dos dados de
 previsão.  
 
 ###2.2. Objetivos Específicos  
 
-(a) Implementação do **método dos mínimos quadrados** apenas utilizando
-comandos e funções básicas. Ou seja, sem o auxílio de recursos de funções e
-rotinas pré-definidas de _toolboxs_ consolidadas.
+(a) Implementação do _**MMQ**_ apenas utilizando comandos e funções básicas.
+Ou seja, sem o auxílio de recursos de funções e rotinas pré-definidas de
+_toolboxes_ consolidadas.
 
 (b) Apresentação dos dados obtidos mediante estruturas reutilizáveis
 (_funções_) baseadas em parâmetros variados (grau da tendência polinomial e
@@ -51,26 +50,26 @@ quantidade de anos a serem previstos).
 ##3. Justificativa  
 
 É preciso definir critérios quantitativos para aferir o quão boa é uma
-determinada modelagem de dados para aproximar os valores reais. Destarte,
+determinada modelagem de dados em aproximar os valores reais. Destarte,
 os dois conjuntos de dados a seguir satisfazem a exigência de medidas
-quantitativas para o que chamamos de _grau de proximidade_ entre o modelo
+quantitativas para caracterizar o _grau de proximidade_ entre o modelo
 estimador e a série analisada.  
 
-São elas: (1) o resíduo $a(t)$ das amostras observadas, que corresponde a
-uma componente aleátoria de média zero e variância constante
-$\sigma_{a}^{2}$ e (2) o _erro quadrático médio_ das amostras de previsão.  
+As medidas quantitativas são: (1) o resíduo $a(t)$ das amostras observadas,
+que corresponde a um ruído branco -- uma componente aleátoria de média zero
+e variância constante $\sigma_{a}^{2}$ -- e (2) o **EQM** das amostras de previsão.  
 
-Ademais, sobre a não utilização de _toolboxs_ com funções e rotinas
+Ademais, sobre a não utilização de _toolboxes_ com funções e rotinas
 pré-definidas, existem inúmeras vantagem em desenhar um algoritmo utilizando
-somente comandos e funções básicas, uma delas é conhecer os mecanismos
-internos do método mais a fundo, o que nos permite avaliar criticamente as
+somente comandos e funções básicas, uma delas é conhecer mais a fundo os
+mecanismos internos do método, o que nos permite avaliar criticamente as
 limitações da própria técnica.  
 
 Por fim, cabe rassaltar que a apresentação dos dados obtidos mediante
 _funções_ definidas pelo usuário, que são estruturas reutilizáveis,
 facilitam aplicações do algoritmo em sequência, sob variadas condições, que
 se baseiam em parâmetros como o grau do polinômio que modela a tendência e
-o número de anos sobre os quais serão feitas previsões.  
+a quantidade de anos sobre os quais serão feitas previsões.  
 
 ##4. Metodologia  
 
@@ -81,12 +80,15 @@ de 1948 e dezembro de 1981.
 
 Os dados foram obtidos no site [DataMarket][1], e foram salvos em um 
 repositório público do [GitHub][2] para facilitar seu processamento no
-código-fonte [projetoTS.R][3] que apresentaremos em pormenores no tópico
-seguinte, em _**Resultados**_.  
+código-fonte [projetoTS.R][3], que apresentaremos em pormenores no tópico
+seguinte.  
 
-##4. Resultados  
+##5. Resultados  
 
 O código-fonte desenvolvido neste trabalho é apresentado a sequir.  
+
+Esta primeira parte do código fonte diz respeito principalmente ao
+estabelecimento da série temporal utilizada.
 
 ```{r setoptions, echo = FALSE}
 knitr::opts_chunk$set(warning = FALSE, results = "hide")
@@ -112,15 +114,93 @@ dataMU <- read.csv("./dataMU.csv", header = FALSE)
 Z <<- ts(dataMU, start = c(1948,1), frequency = 12)
 ```
 
-Esta primeira parte do código fonte diz respeito principalemnte ao
-estabelecimento da série temporal utilizada.  
-
 A parte seguinte é a principal do algoritmo, apresentando as três funções
-definidas pelo programador. Elas aplicam o _**método dos mínimos quadrados**_,
-geram os gráficos a partir dos parâmetros obtidos e calculam o 
-**erro quadrático médio** da previsão (_MMQz()_, _plotz()_ e _EQM()_,
-respectivamente). Mais detalhes estão presentes nos comentários do decorrer
-do código.
+definidas pelo usuário. Elas aplicam o _**MMQ**_, geram os gráficos a partir
+dos parâmetros obtidos e calculam o **EQM** da previsão (_MMQz()_, _plotz()_
+e _EQM()_, respectivamente).  
+A teoria usual do _**MMQ**_ modela a série original (amostras $Z_{1}, Z_{2}, \cdots, Z_{N}$), com intuito de obter os estimadores $\alpha$ e $\beta$ de  
+
+$$Z=T\beta+D\alpha+a,$$
+
+que pode ser escrita na forma  
+
+$$Z=X\gamma+a,$$
+
+onde
+
+$$\mathbf{X} =
+ \begin{pmatrix}
+  \mathbf{T} & \mathbf{D}
+ \end{pmatrix},
+  \gamma =
+ \begin{pmatrix}
+  \beta \\
+  \alpha
+ \end{pmatrix} \Rightarrow 
+  \mathbf{\hat{\gamma}} = (\mathbf{X}^T\mathbf{X})^{-1}\mathbf{X}^T\mathbf{Z}$$
+  
+são os estimadores usuais de mínimos quadrados.  
+
+As matrizes de $Z=T\beta+D\alpha+a$ estão definidas a seguir  
+
+$$\mathbf{Z}_{N \times 1} =
+ \begin{pmatrix}
+  Z_1 \\
+  Z_2 \\
+  \vdots  \\
+  Z_N
+ \end{pmatrix}$$  
+ 
+$$\mathbf{T}_{N \times (m+1)} =
+ \begin{pmatrix}
+  1 & 1 & \cdots & 1 \\
+  1 & 2 & \cdots & 2^m \\
+  \vdots & \vdots & \ddots & \vdots  \\
+  1 & N & \cdots & N^{m}
+ \end{pmatrix},
+  \beta_{(m+1) \times 1} =
+ \begin{pmatrix}
+  \beta_{0} \\
+  \beta_{1} \\
+  \vdots  \\
+  \beta_{N}
+ \end{pmatrix}$$  
+ 
+$$\mathbf{D}_{N \times 11} =
+ \begin{pmatrix}
+  D_{1,1} & D_{1,2} & \cdots & D_{1,11} \\
+  D_{2,1} & D_{2,2} & \cdots & D_{2,11} \\
+  \vdots  & \vdots  & \ddots & \vdots  \\
+  D_{N,1} & D_{N,2} & \cdots & D_{N,11}
+ \end{pmatrix},  
+  \alpha_{11 \times 1} =
+ \begin{pmatrix}
+  \alpha_{0} \\
+  \alpha_{1} \\
+  \vdots  \\
+  \alpha_{11}
+ \end{pmatrix}$$  
+
+$$\mathbf{a}_{N \times 1} =
+ \begin{pmatrix}
+  a_{0} \\
+  a_{1} \\
+  \vdots  \\
+  a_{N}
+ \end{pmatrix}.$$  
+
+Sendo os coeficientes da matriz $D$ definidos da seguinte forma  
+
+$$D_{ij} =
+ \begin{array}{ccccc}
+  1  & \mathrm{se} & i & mod & 12 = j \\
+  -1 & \mathrm{se} & i & mod & 12 = 0 \\
+  0  & & &\mathrm{caso} & \mathrm{contrário}
+ \end{array}$$
+
+Os detalhes sobre como o nosso algoritmo construiu tais matrizes e
+estimadores estão presentes no decorrer do código abaixo, que apresenta
+comentários de esclarecimento.  
 
 ```{r functions}
 #A função "MMQz()" tem o objetivo de gerar o data.frame "dataMU", que apre-
@@ -291,7 +371,7 @@ EQM <- function() {
 
 Definidas as funções que realizarão o processamento, agora elas serão
 aplicadas considerando tendências polinomiais de diferentes ordens e
-considerando períodos de previsão variáveis para aplicação da modelagem.  
+períodos de previsão variáveis para aplicação da modelagem.  
 
 ```{r graph1, results = "hold", fig.height = 4, fig.align = "center"}
 #Aplicação de uma tendência linear (pol.order = 1) e previsão para 2 anos
@@ -301,8 +381,8 @@ plotz()
 p1; p2; p3; p4
 ```
 
-O erro quadrático médio calculado para esta primeira aplicação utiliza os
-dados plotados acima, no último gráfico. O seu valor é  
+O **EQM** calculado para esta primeira aplicação utiliza os dados plotados
+acima, no último gráfico. O seu valor é  
 
 ```{r results = "markup"} 
 EQM()
@@ -316,8 +396,8 @@ plotz()
 p1; p2; p3; p4
 ```
 
-O erro quadrático médio calculado para esta segunda aplicação utiliza os
-dados plotados acima, no último gráfico. O seu valor é  
+O **EQM** calculado para esta segunda aplicação utiliza os dados plotados
+acima, no último gráfico. O seu valor é  
 
 ```{r results = "markup"} 
 EQM()
@@ -331,14 +411,24 @@ plotz()
 p1; p2; p3; p4
 ```
 
-O erro quadrático médio calculado para esta terceira aplicação utiliza os
-dados plotados acima, no último gráfico. O seu valor é  
+O **EQM** calculado para esta terceira aplicação utiliza os dados plotados
+acima, no último gráfico. O seu valor é  
 
 ```{r results = "markup"} 
 EQM()
 ```
 
-##5. Conclusão  
+##5. Considerações finais  
+
+Ao analisar os gráficos plotados a partir da aplicação do _**MMQ**_,
+percebemos as limitações que a modelagem impusera à série temporal
+analisada.  
+A medida que foram aplicas tendências polinomiais de ordens superiores, o
+**EQM** fora aumentando progressivamente, o que indica erros maiores para
+os valores de previsão. Contudo, ao olharmos para as séries
+estimadas, houve uma maior correspondência com a série original. O fato dos
+resíduos $a(t)$ seguirem possuindo amplitudes máximas e variações
+semelhantes talvez indique a influência que a sazonalidade determinística tenha apresentado à modelagem. 
 
 ***
 [1]: https://datamarket.com/data/set/22q4/monthly-us-male-16-19-years-unemployment-figures-thousands-1948-1981#!ds=22q4&display=line "DataMarket"

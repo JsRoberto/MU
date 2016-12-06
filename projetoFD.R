@@ -10,9 +10,9 @@ library(gridExtra)
 
 #Cracterísticas dos filtro elíptico
 Amax <- 0.5 #dB
-Amin <- 60 #dB
+Amin <- 85.5 #dB
 fp <- 30 #Hz
-fs <- 60 #Hz
+fs <- 90 #Hz
 
 # Cálculo das frequências em rad/s
 Wp <- 2*pi*fp
@@ -94,20 +94,23 @@ Ploc <- function(N, K, m) {
 
 Zloc(N,K,m)
 Ploc(N,K,m)
+
 Gain <- Fs.D[length(Fs.D)]/Fs.N[length(Fs.N)]
 TEST <- freqs(Gain*Fs.N, Fs.D, W = seq(0, 10, length.out = 500))
 df.test <- data.frame(w_rads = TEST$W,
-                      mag_db= 20*log10(Mod(TEST$H)))
+                      mag_db= log10(Mod(TEST$H)^20))
+
 p1 <- ggplot(data = df.test, aes(x = w_rads, y = mag_db)) +
-      geom_line() +
-      scale_x_continuous(breaks = -1:1,
-                         labels = 10^{-1:1}) +
+      geom_line(color = "royalblue3", size = 1.1) +
+      scale_y_continuous(breaks = seq(-100,0,by = 20)) +
+      scale_x_continuous(limits = c(0, Wsn*2), breaks = 0:round(Wsn*2)) +
       labs(title = "Frequency Response - Elliptic Analog Low Pass Prototype",
-           x = "Frequency normalized (rad/s)", y = "Magnitude (dB)")
-p1
-ttest <- df.test$mag_db + 60
-ttest <- ttest^2
-10^{df.test$log10w_rads[ttest == min(ttest)]}
+           x = "Normalized frequency(rad/s)", y = "Magnitude (dB)")
+
+
+#p1 + geom_rect(aes(xmin = 1, xmax=2*Wsn,ymin = -Inf, ymax = -Amin), alpha=0.2)
+      #geom_vline(xintercept = c(1,Wsn)) + 
+      #geom_hline(data = df.test, aes(yintercept = c(min(mag_db),max(mag_db))))
 
 ###############PAREI AQUI!
 freqs.plot <- function(filter.freqs) {
